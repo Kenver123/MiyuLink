@@ -609,20 +609,33 @@ class Node {
             attempt > player.autoplayTries ||
             !(await player.queue.previous).length)
             return false;
-        const PreviousQueue = await player.queue.previous;
-        const lastTrack = PreviousQueue?.at(-1);
-        lastTrack.requester = player.get('Internal_BotUser');
-        if (!lastTrack)
-            return false;
-        const tracks = await Utils_1.AutoPlayUtils.getRecommendedTracks(lastTrack);
-        if (tracks.length) {
-            await player.queue.add(tracks[0]);
-            await player.play();
-            return true;
-        }
-        else {
-            return false;
-        }
+       
+         const lastTrack = player.queue.previous[player.queue.previous.length - 1];
+         if (!lastTrack) return false;
+
+          lastTrack.requester = player.get("Internal_BotUser");
+
+        let autoplayHistory = player.get("autoplayHistory");
+         if (!autoplayHistory) {
+             autoplayHistory = new Set();
+             player.set("autoplayHistory", autoplayHistory);
+
+         }
+            const tracks = await Utils_1.AutoPlayUtils.getRecommendedTracks(lastTrack);
+         if (!tracks?.length) return false;
+     
+         const uniqueTrack = tracks.find(track => !autoplayHistory.has(track.identifier));
+     
+         if (!uniqueTrack) {
+             return await this.handleAutoplay(player, attempt + 1); // Retry
+         }
+
+         autoplayHistory.add(uniqueTrack.identifier);
+         player.set("autoplayHistory", autoplayHistory);
+     
+         player.queue.add(uniqueTrack);
+         await player.play();
+         return true;
     }
     /**
      * Selects a platform from the given enabled sources.

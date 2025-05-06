@@ -97,6 +97,8 @@ class Player {
         // Add the player to the manager's player collection.
         this.manager.players.set(options.guildId, this);
         // Set the initial volume.
+        this.autoplayHistory = new Set();
+
         this.setVolume(options.volume ?? 100);
         // Initialize the filters.
         this.filters = new Filters_1.Filters(this);
@@ -186,7 +188,7 @@ class Player {
         // Clone the current player state for comparison.
         const oldPlayer = this ? { ...this } : null;
         // Pause the player.
-        await this.pause(true);
+        this.pause(true);
         // Send the voice state update to the gateway.
         this.manager.options.send(this.guildId, {
             op: 4,
@@ -223,16 +225,39 @@ class Player {
         const oldPlayer = this ? { ...this } : null;
         this.state = Utils_1.StateTypes.Destroying;
         if (disconnect) {
-            await this.disconnect();
+             await this.pause(true).catch(() => { });
+             await this.disconnect().catch(() => { });
         }
+
+                // Stop any intervals or loops
+         if (this.dynamicLoopInterval) {
+             clearInterval(this.dynamicLoopInterval);
+             this.dynamicLoopInterval = null;
+         }
+
+
+         
+         if (this.isAutoplay) {
+            this.isAutoplay = false;
+         }
+         this.set("autoplayHistory", new Set());
+
         await this.node.rest.destroyPlayer(this.guildId);
-        await this.queue.clear();
+        this.queue.clear();
+
         this.manager.emit(Manager_1.ManagerEventTypes.PlayerStateUpdate, oldPlayer, null, {
             changeType: Manager_1.PlayerStateEventTypes.PlayerDestroy,
         });
         this.manager.emit(Manager_1.ManagerEventTypes.PlayerDestroy, this);
-        const deleted = this.manager.players.delete(this.guildId);
-        return deleted;
+
+                // Safe delete
+         let deleted = false;
+         if (this.manager.players.has(this.guildId)) {
+             deleted = this.manager.players.delete(this.guildId);
+             if (!deleted) {
+                 console.warn(`[Player] Deletion failed despite existence in map for guild: ${this.guildId}`);
+             }
+         }
     }
     /**
      * Sets the player voice channel.
