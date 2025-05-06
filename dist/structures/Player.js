@@ -177,7 +177,7 @@ class Player {
             },
         });
     }
-    /**
+      /**
      * Disconnects the player from the voice channel.
      * @throws {TypeError} If the player is not connected.
      * @returns {this} - The current instance of the Player class for method chaining.
@@ -224,9 +224,9 @@ class Player {
     async destroy(disconnect = true) {
         const oldPlayer = this ? { ...this } : null;
         this.state = Utils_1.StateTypes.Destroying;
+        
         if (disconnect) {
-             await this.pause(true).catch(() => { });
-             await this.disconnect().catch(() => { });
+           this.disconnect().catch(() => { });
         }
 
                 // Stop any intervals or loops
@@ -242,17 +242,16 @@ class Player {
          }
          this.set("autoplayHistory", new Set());
 
-        setTimeout(async () => {
+        setTimeout(() => {
             
-        await this.node.rest.destroyPlayer(this.guildId);
+        this.node.rest.destroyPlayer(this.guildId);
         this.queue.clear();
 
-        await this.manager.emit(Manager_1.ManagerEventTypes.PlayerStateUpdate, oldPlayer, null, {
+        this.manager.emit(Manager_1.ManagerEventTypes.PlayerStateUpdate, oldPlayer, null, {
             changeType: Manager_1.PlayerStateEventTypes.PlayerDestroy,
         });
-
-        await this.manager.emit(Manager_1.ManagerEventTypes.PlayerDestroy, this);
             this.manager.players.delete(this.guildId);
+        this.manager.emit(Manager_1.ManagerEventTypes.PlayerDestroy, this);
         }, 1000)
     }
     /**
