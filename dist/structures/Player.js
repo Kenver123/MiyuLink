@@ -242,17 +242,16 @@ class Player {
          }
          this.set("autoplayHistory", new Set());
 
-        setTimeout(() => {
-            
         this.node.rest.destroyPlayer(this.guildId);
         this.queue.clear();
 
         this.manager.emit(Manager_1.ManagerEventTypes.PlayerStateUpdate, oldPlayer, null, {
             changeType: Manager_1.PlayerStateEventTypes.PlayerDestroy,
         });
-            this.manager.players.delete(this.guildId);
-        this.manager.emit(Manager_1.ManagerEventTypes.PlayerDestroy, this);
-        }, 1000)
+        this.manager.players.delete(this.guildId);
+        setTimeout(() => {
+          this.manager.emit(Manager_1.ManagerEventTypes.PlayerDestroy, this);
+        }, 300)
     }
     /**
      * Sets the player voice channel.
