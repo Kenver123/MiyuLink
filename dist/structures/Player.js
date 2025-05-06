@@ -242,22 +242,18 @@ class Player {
          }
          this.set("autoplayHistory", new Set());
 
+        setTimeout(async () => {
+            
         await this.node.rest.destroyPlayer(this.guildId);
         this.queue.clear();
 
         this.manager.emit(Manager_1.ManagerEventTypes.PlayerStateUpdate, oldPlayer, null, {
             changeType: Manager_1.PlayerStateEventTypes.PlayerDestroy,
         });
-        this.manager.emit(Manager_1.ManagerEventTypes.PlayerDestroy, this);
 
-                // Safe delete
-         let deleted = false;
-         if (this.manager.players.has(this.guildId)) {
-             deleted = this.manager.players.delete(this.guildId);
-             if (!deleted) {
-                 console.warn(`[Player] Deletion failed despite existence in map for guild: ${this.guildId}`);
-             }
-         }
+        this.manager.emit(Manager_1.ManagerEventTypes.PlayerDestroy, this);
+            this.manager.players.delete(this.guildId);
+        }, 1000)
     }
     /**
      * Sets the player voice channel.
