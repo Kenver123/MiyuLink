@@ -205,7 +205,7 @@ class Player {
         this.manager.emit(Manager_1.ManagerEventTypes.PlayerStateUpdate, oldPlayer, this, {
             changeType: Manager_1.PlayerStateEventTypes.ConnectionChange,
             details: {
-                changeType: 'disconnect',
+                changeType: "disconnect",
                 previousConnection: oldPlayer.state === Utils_1.StateTypes.Connected,
                 currentConnection: false,
             },
@@ -220,20 +220,19 @@ class Player {
      * @emits {PlayerStateUpdate} - Emitted when the player state is updated.
      */
     async destroy(disconnect = true) {
-        if (this.state === Utils_1.StateTypes.Disconnected)
-            return true;
         const oldPlayer = this ? { ...this } : null;
         this.state = Utils_1.StateTypes.Destroying;
         if (disconnect) {
             await this.disconnect();
         }
         await this.node.rest.destroyPlayer(this.guildId);
-        this.queue.clear();
+        await this.queue.clear();
         this.manager.emit(Manager_1.ManagerEventTypes.PlayerStateUpdate, oldPlayer, null, {
             changeType: Manager_1.PlayerStateEventTypes.PlayerDestroy,
         });
         this.manager.emit(Manager_1.ManagerEventTypes.PlayerDestroy, this);
-        return this.manager.players.delete(this.guildId);
+        const deleted = this.manager.players.delete(this.guildId);
+        return deleted;
     }
     /**
      * Sets the player voice channel.
