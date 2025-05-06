@@ -247,11 +247,11 @@ class Player {
         await this.node.rest.destroyPlayer(this.guildId);
         this.queue.clear();
 
-        this.manager.emit(Manager_1.ManagerEventTypes.PlayerStateUpdate, oldPlayer, null, {
+        await this.manager.emit(Manager_1.ManagerEventTypes.PlayerStateUpdate, oldPlayer, null, {
             changeType: Manager_1.PlayerStateEventTypes.PlayerDestroy,
         });
 
-        this.manager.emit(Manager_1.ManagerEventTypes.PlayerDestroy, this);
+        await this.manager.emit(Manager_1.ManagerEventTypes.PlayerDestroy, this);
             this.manager.players.delete(this.guildId);
         }, 1000)
     }
